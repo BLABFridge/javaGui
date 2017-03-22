@@ -2,7 +2,7 @@ import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
-import java.awt.BorderLayout;
+import java.awt.*;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -29,12 +29,20 @@ class GUIClass extends JFrame {
 
 	public GUIClass(String s){
 		super(s);
-		setSize(400,400);
-		setLayout(new BorderLayout());
+		this.setSize(400, 400);
+		JPanel pane = new JPanel();
+		pane.setLayout(new GridBagLayout());
+		pane.setSize(400, 400);
+		this.add(pane);
 		getListButton = new JButton("Get List");
 		enterAddingModeButton = new JButton("Enter Adding Mode");
 		//THIS NEEDS MORE WORK- IS NOT COMPLETE
-		add(getListButton, BorderLayout.WEST);
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = 0;
+
+		pane.add(getListButton, c);
 		//add()
 
 		try{
@@ -80,7 +88,10 @@ class GUIClass extends JFrame {
 	}
 
 	public static void main(String[] args){
-		new GUIClass("Fridge Controller Controller");
+		GUIClass mainFrame = new GUIClass("Fridge Controller Controller");
+		mainFrame.setVisible(true);
+		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
 	}
 
 
