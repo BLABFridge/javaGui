@@ -3,6 +3,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import javax.swing.JTable;
+import javax.swing.JScrollPane;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -36,14 +40,41 @@ class GUIClass extends JFrame {
 		this.add(pane);
 		getListButton = new JButton("Get List");
 		enterAddingModeButton = new JButton("Enter Adding Mode");
+		
+		String[] columnNames = {"Food Name", 
+			"Date Added", 
+			"Expiry Date", 
+			"Shelf Life", 
+			"Time Until Expiration"};
+		LocalDate today = LocalDate.now();
+		LocalDate apple = today.plus(4, ChronoUnit.DAYS);
+		LocalDate orange = today.plus(6, ChronoUnit.DAYS);
+		Object[][] data = {{"Orange", today, orange, 6, ChronoUnit.DAYS.between(today, orange)}, 
+				{"Apple", today, apple, 3, ChronoUnit.DAYS.between(today, apple)}};
+		
+		JTable table = new JTable(data, columnNames);
+		table.setAutoCreateRowSorter(true);
+		JScrollPane scrollP = new JScrollPane(table, 
+			JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+			JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		//THIS NEEDS MORE WORK- IS NOT COMPLETE
 		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.HORIZONTAL;
+		
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 4;
+		c.weighty = 4;
 		c.gridx = 0;
 		c.gridy = 0;
+		pane.add(scrollP, c);
+
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = 1;
 
 		pane.add(getListButton, c);
+		
 		//add()
+		getListButton.addActionListener(new ButtonListener(this));
 
 		try{
 			sock = new DatagramSocket();
@@ -57,6 +88,16 @@ class GUIClass extends JFrame {
 			System.out.println("No Host " + fridgeControllerInetAddressAsString);
 		}
 
+	}
+
+	public void itemsToTable(ArrayList<FoodItem> itemList) {
+		Object data[][];
+		int i = 0;
+		for(FoodItem item:itemList) {
+			for(int j = 0; j < 5; j += 1) {
+				//data[i][j] = item.
+			}
+		}
 	}
 
 	public ArrayList<FoodItem> getItemsExpiringBefore(int days){ //this should be called by the actionEvent created by a button press
