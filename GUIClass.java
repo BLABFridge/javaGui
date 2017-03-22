@@ -20,8 +20,12 @@ import java.util.ArrayList;
 class GUIClass extends JFrame {
 	
 	public JTextArea textArea;
+	public JTextArea expiringTextArea;
+	public JTextArea setTimeoutTextArea;
+	public String editText1 = "";
 	public JButton getListButton;
-	public JButton enterAddingModeButton;
+	public JButton setTimeout;
+	public JButton getExpiring;
 	public JPanel panel;
 
 	private DatagramSocket sock;
@@ -39,7 +43,11 @@ class GUIClass extends JFrame {
 		pane.setSize(400, 400);
 		this.add(pane);
 		getListButton = new JButton("Get List");
-		enterAddingModeButton = new JButton("Enter Adding Mode");
+		setTimeout = new JButton("Set Timeout");
+		getExpiring = new JButton("Get Expiring");
+		
+		expiringTextArea = new JTextArea("Enter Date");
+		setTimeoutTextArea = new JTextArea("Enter timeout");
 		
 		String[] columnNames = {"Food Name", 
 			"Date Added", 
@@ -73,8 +81,24 @@ class GUIClass extends JFrame {
 
 		pane.add(getListButton, c);
 		
+
+		
+		//NEED TO ADD THE BUTTONS AND THE TEXT AREAS IN THE APPROPRIATE PLACE
+		c.gridx = 0;
+		c.gridy = 2;
+		pane.add(getExpiring, c); 
+		c.gridx = 1;
+		pane.add(expiringTextArea, c);
+		c.gridy = 3;
+		c.gridx = 0;
+		pane.add(setTimeout,c);
+		c.gridx = 1;
+		pane.add(setTimeoutTextArea,c);
+		
 		//add()
 		getListButton.addActionListener(new ButtonListener(this));
+		getExpiring.addActionListener(new ButtonListener(this));
+		setTimeout.addActionListener(new ButtonListener(this));
 
 		try{
 			sock = new DatagramSocket();
@@ -138,3 +162,4 @@ class GUIClass extends JFrame {
 
 
 }
+
