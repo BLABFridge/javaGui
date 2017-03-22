@@ -23,6 +23,8 @@ class GUIClass extends JFrame {
 	public JTextArea expiringTextArea;
 	public JTextArea setTimeoutTextArea;
 	public String editText1 = "";
+	public String defaultExpiringAreaText = "Enter date";
+	public String defaultTimeoutAreaText = "Enter Timeout";
 	public JButton getListButton;
 	public JButton setTimeout;
 	public JButton getExpiring;
@@ -46,8 +48,8 @@ class GUIClass extends JFrame {
 		setTimeout = new JButton("Set Timeout");
 		getExpiring = new JButton("Get Expiring");
 		
-		expiringTextArea = new JTextArea("Enter Date");
-		setTimeoutTextArea = new JTextArea("Enter timeout");
+		expiringTextArea = new JTextArea(defaultExpiringAreaText);
+		setTimeoutTextArea = new JTextArea(defaultTimeoutAreaText);
 		
 		String[] columnNames = {"Food Name", 
 			"Date Added", 
