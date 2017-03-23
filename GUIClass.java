@@ -219,6 +219,26 @@ class GUIClass extends JFrame {
 		}
 		return items;
 	}
+	
+	    /*Sends the new timeout to the controller, does not wait on response */
+   	 public void setTimeout(int newTimeout){
+       		 byte[] buf = new byte[100];
+       		 buf[0] = '8';
+        	 buf[1] = FoodItem.opcodeDelimiter.getBytes()[0];
+        	 if(newTimeout == 0){
+           		 buf[2] = '0';
+        	 }else{
+            		buf[2] = newTimeout.getBytes();
+        	 }
+        
+       		 DatagramPacket p = new DatagramPacket(buf, buf.length, fridgeControllerInetAddress, fridgeControllerPort);
+       		 try{
+           		 sock.send(p);
+        	 }catch(IOException e){
+            		System.out.println("Error sending timeout packet");
+        	 }
+        
+    	}
 
 	public static void main(String[] args){
 		GUIClass mainFrame = new GUIClass("Fridge Controller Controller");
