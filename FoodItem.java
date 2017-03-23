@@ -36,7 +36,7 @@ class FoodItem{
 
 	public FoodItem(FoodItem anotherFoodItem){
 		this.itemName = new String(anotherFoodItem.itemName);
-		for (int i = 0; i < ReaderClass.TAGCODE_LENGTH; ++i) {
+		for (int i = 0; i < 10; ++i) {
 			this.tagCode[i] = anotherFoodItem.tagCode[i];
 		}
 		this.lifetime = anotherFoodItem.lifetime;
@@ -88,6 +88,10 @@ class FoodItem{
 
 	public float getExpiryToLifetimeRatio(){
 		return (expiresInDays()/lifetime);
+	}
+
+	public float getLifetime() {
+		return lifetime;
 	}
 
 	public void renewExpiryDate(){ //this is considered a secondary constructor, the only reason it isn't in the constructor is so that expiryDate can be renewed at the 'time of entry'
