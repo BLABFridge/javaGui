@@ -1,5 +1,6 @@
 import java.util.*;
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.time.*;
@@ -25,13 +26,15 @@ class GUIClass extends JFrame {
 	public String editText1 = "";
 	public String defaultExpiringAreaText = "Enter date";
 	public String defaultTimeoutAreaText = "Enter Timeout";
-	public JButton getListButton;
+//	public JButton getListButton;
 	public JButton setTimeout;
 	public JButton getExpiring;
-	public JPanel pane;
+	public JPanel topPane;
+	private JPanel midPane;
+	private JPanel botPane;
 	private JScrollPane scrollP;
-	private JDatePickerImpl datePicker;
-	private JTextArea nameTextField;
+	private JDatePickerImpl addedPicker, expiryPicker;
+	private JTextArea nameTextField, daysLeftField;
 
 	private DatagramSocket sock;
 	private InetAddress fridgeControllerInetAddress;
@@ -43,11 +46,13 @@ class GUIClass extends JFrame {
 	public GUIClass(String s){
 		super(s);
 		this.setSize(400, 400);
-		pane = new JPanel();
-		pane.setLayout(new GridBagLayout());
-		pane.setSize(400, 400);
-		this.add(pane);
-		getListButton = new JButton("Get List");
+
+		midPane = new JPanel();
+		midPane.setLayout(new GridBagLayout());
+		midPane.setSize(400, 300);
+		midPane.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+		this.add(midPane);
+//		getListButton = new JButton("Get List");
 		setTimeout = new JButton("Set Timeout");
 		getExpiring = new JButton("Get Expiring");
 		
@@ -82,13 +87,14 @@ class GUIClass extends JFrame {
 		c.gridx = 0;
 		c.gridy = 0;
 		pane.add(scrollP, c);
-*/
+		
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 0;
 		c.gridy = 1;
 		pane.add(getListButton, c);
-		
+*/
+		// This is the date picker library.
 		UtilDateModel model = new UtilDateModel();
 
 		Properties p = new Properties();
@@ -97,39 +103,62 @@ class GUIClass extends JFrame {
 		p.put("text.year", "Year");
 		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
 
-		datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		addedPicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		expiryPicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
 		
+		GridBagConstraints c = new GridBagConstraints();
+
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(3, 3, 3, 3);
 		c.gridx = 0;
 		c.gridy = 4;
-		pane.add(new JTextField("Item:"), c);
+		midPane.add(new JTextField("Item:"), c);
 		
 		c.gridx = 1;
 		c.gridy = 4;
 		nameTextField = new JTextArea();
-		pane.add(nameTextField, c);
+		midPane.add(nameTextField, c);
 
 		c.gridx = 0;
 		c.gridy = 5;
-		pane.add(new JTextField("Added Before:"), c);
+		midPane.add(new JTextField("Added Before:"), c);
 		
 		c.gridx = 1;
 		c.gridy = 5;
-		pane.add(datePicker, c);
+		midPane.add(addedPicker, c);
+
+		c.gridx = 0;
+		c.gridy = 6;
+		midPane.add(new JTextField("Expires Before:"), c);
+
+		c.gridx = 1;
+		c.gridy = 6;
+		midPane.add(expiryPicker, c);
+		
+		c.gridx = 0;
+		c.gridy = 7;
+		midPane.add(new JTextField("Days Until Expiration:"), c);
+
+		c.gridx = 1;
+		c.gridy = 7;
+		daysLeftField = new JTextArea();
+		midPane.add(daysLeftField, c);
+		
 	
 		//NEED TO ADD THE BUTTONS AND THE TEXT AREAS IN THE APPROPRIATE PLACE
 /*		c.gridx = 0;
 		c.gridy = 4;
 		pane.add(getExpiring, c); 
-*/		c.gridx = 1;
+		c.gridx = 1;
 		pane.add(expiringTextArea, c);
 		c.gridy = 5;
 		c.gridx = 0;
 		pane.add(setTimeout,c);
 		c.gridx = 1;
 		pane.add(setTimeoutTextArea,c);
-		
+*/		
 		//add()
-		getListButton.addActionListener(new ButtonListener(this));
+//		getListButton.addActionListener(new ButtonListener(this));
 		getExpiring.addActionListener(new ButtonListener(this));
 		setTimeout.addActionListener(new ButtonListener(this));
 
@@ -148,6 +177,11 @@ class GUIClass extends JFrame {
 	}
 
 	public void itemsToTable(ArrayList<FoodItem> itemList) {
+		
+		topPane = new JPanel();
+		topPane.setLayout(new GridBagLayout());
+		topPane.setSize(400, 400);
+		
 		Object data[][] = null;
 		int i = 0;
 		String[] columnNames = {"Food Name", 
@@ -173,10 +207,11 @@ class GUIClass extends JFrame {
 		
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 4;
-		c.weighty = 4;
+		c.weighty = 6;
 		c.gridx = 0;
 		c.gridy = 0;
-		pane.add(scrollP, c);
+		topPane.add(scrollP, c);
+		this.add(topPane);
 		
 		RowFilter<TableModel, Object> nameFilter = null;
 		RowFilter<TableModel, Object> addedFilter = null;
@@ -186,7 +221,8 @@ class GUIClass extends JFrame {
 		java.util.List<RowFilter<TableModel, Object>> filters = new ArrayList<RowFilter<TableModel, Object>>();
 		try {
 			nameFilter = RowFilter.regexFilter(nameTextField.getText(), 0);
-			addedFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) datePicker.getModel().getValue(), 1);
+			addedFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) addedPicker.getModel().getValue(), 1);
+			expiryFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) expiryPicker.getModel().getValue(), 1);
 		} catch(java.util.regex.PatternSyntaxException e) {
 			e.getMessage();
 		}
