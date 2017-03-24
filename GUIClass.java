@@ -1,9 +1,13 @@
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JTextArea;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.table.*;
 import java.awt.*;
-
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import org.jdatepicker.impl.*;
+import org.jdatepicker.util.*;
+import org.jdatepicker.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -16,9 +20,18 @@ import java.util.ArrayList;
 class GUIClass extends JFrame {
 	
 	public JTextArea textArea;
+	public JTextArea expiringTextArea;
+	public JTextArea setTimeoutTextArea;
+	public String editText1 = "";
+	public String defaultExpiringAreaText = "Enter date";
+	public String defaultTimeoutAreaText = "Enter Timeout";
 	public JButton getListButton;
-	public JButton enterAddingModeButton;
-	public JPanel panel;
+	public JButton setTimeout;
+	public JButton getExpiring;
+	public JPanel pane;
+	private JScrollPane scrollP;
+	private JDatePickerImpl datePicker;
+	private JTextArea nameTextField;
 
 	private DatagramSocket sock;
 	private InetAddress fridgeControllerInetAddress;
@@ -30,20 +43,95 @@ class GUIClass extends JFrame {
 	public GUIClass(String s){
 		super(s);
 		this.setSize(400, 400);
-		JPanel pane = new JPanel();
+		pane = new JPanel();
 		pane.setLayout(new GridBagLayout());
 		pane.setSize(400, 400);
 		this.add(pane);
 		getListButton = new JButton("Get List");
-		enterAddingModeButton = new JButton("Enter Adding Mode");
+		setTimeout = new JButton("Set Timeout");
+		getExpiring = new JButton("Get Expiring");
+		
+		expiringTextArea = new JTextArea(defaultExpiringAreaText);
+		setTimeoutTextArea = new JTextArea(defaultTimeoutAreaText);
+		// Moved all table creation and listing into new method called itemsToTable();
+		// Just request all items from the beginning and put into table and let
+		// the JTable library do the filtering.
+/*
+		String[] columnNames = {"Food Name", 
+			"Date Added", 
+			"Expiry Date", 
+			"Shelf Life", 
+			"Time Until Expiration"};
+		LocalDate today = LocalDate.now();
+		LocalDate apple = today.plus(4, ChronoUnit.DAYS);
+		LocalDate orange = today.plus(6, ChronoUnit.DAYS);
+		Object[][] data = {{"Orange", today, orange, 6, ChronoUnit.DAYS.between(today, orange)}, 
+				{"Apple", today, apple, 3, ChronoUnit.DAYS.between(today, apple)}};
+		
+		JTable table = new JTable(data, columnNames);
+		table.setAutoCreateRowSorter(true);
+		scrollP = new JScrollPane(table, 
+			JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+			JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		//THIS NEEDS MORE WORK- IS NOT COMPLETE
+		GridBagConstraints c = new GridBagConstraints();
+		
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 4;
+		c.weighty = 4;
+		c.gridx = 0;
+		c.gridy = 0;
+		pane.add(scrollP, c);
+*/
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 0;
-		c.gridy = 0;
-
+		c.gridy = 1;
 		pane.add(getListButton, c);
+		
+		UtilDateModel model = new UtilDateModel();
+
+		Properties p = new Properties();
+		p.put("text.today", "Today");
+		p.put("text.month", "Month");
+		p.put("text.year", "Year");
+		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+
+		datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		
+		c.gridx = 0;
+		c.gridy = 4;
+		pane.add(new JTextField("Item:"), c);
+		
+		c.gridx = 1;
+		c.gridy = 4;
+		nameTextField = new JTextArea();
+		pane.add(nameTextField, c);
+
+		c.gridx = 0;
+		c.gridy = 5;
+		pane.add(new JTextField("Added Before:"), c);
+		
+		c.gridx = 1;
+		c.gridy = 5;
+		pane.add(datePicker, c);
+	
+		//NEED TO ADD THE BUTTONS AND THE TEXT AREAS IN THE APPROPRIATE PLACE
+/*		c.gridx = 0;
+		c.gridy = 4;
+		pane.add(getExpiring, c); 
+*/		c.gridx = 1;
+		pane.add(expiringTextArea, c);
+		c.gridy = 5;
+		c.gridx = 0;
+		pane.add(setTimeout,c);
+		c.gridx = 1;
+		pane.add(setTimeoutTextArea,c);
+		
 		//add()
+		getListButton.addActionListener(new ButtonListener(this));
+		getExpiring.addActionListener(new ButtonListener(this));
+		setTimeout.addActionListener(new ButtonListener(this));
 
 		try{
 			sock = new DatagramSocket();
@@ -57,6 +145,51 @@ class GUIClass extends JFrame {
 			System.out.println("No Host " + fridgeControllerInetAddressAsString);
 		}
 
+	}
+
+	public void itemsToTable(ArrayList<FoodItem> itemList) {
+		Object data[][] = null;
+		int i = 0;
+		String[] columnNames = {"Food Name", 
+			"Date Added", 
+			"Expiry Date", 
+			"Shelf Life", 
+			"Time Until Expiration"};
+		for(FoodItem item:itemList) {
+			data[i][0] = item.getName();
+			data[i][1] = Date.from(item.getDateAdded().atZone(ZoneId.systemDefault()).toInstant());
+			data[i][2] = Date.from(item.expiresOn().atZone(ZoneId.systemDefault()).toInstant());
+			data[i][3] = item.getLifetime();
+			data[i][4] = item.expiresInDays();
+			i += 1;
+		}
+		JTable table = new JTable(data, columnNames);
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
+		table.setRowSorter(sorter);
+		scrollP = new JScrollPane(table, 
+			JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+			JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		GridBagConstraints c = new GridBagConstraints();
+		
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 4;
+		c.weighty = 4;
+		c.gridx = 0;
+		c.gridy = 0;
+		pane.add(scrollP, c);
+		
+		RowFilter<TableModel, Object> nameFilter = null;
+		RowFilter<TableModel, Object> addedFilter = null;
+		RowFilter<TableModel, Object> expiryFilter = null;
+		RowFilter<TableModel, Object> lifeFilter = null;
+		RowFilter<TableModel, Object> remainingFilter = null;
+		java.util.List<RowFilter<TableModel, Object>> filters = new ArrayList<RowFilter<TableModel, Object>>();
+		try {
+			nameFilter = RowFilter.regexFilter(nameTextField.getText(), 0);
+			addedFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) datePicker.getModel().getValue(), 1);
+		} catch(java.util.regex.PatternSyntaxException e) {
+			e.getMessage();
+		}
 	}
 
 	public ArrayList<FoodItem> getItemsExpiringBefore(int days){ //this should be called by the actionEvent created by a button press
@@ -86,6 +219,26 @@ class GUIClass extends JFrame {
 		}
 		return items;
 	}
+	
+	    /*Sends the new timeout to the controller, does not wait on response */
+   	 public void setTimeout(int newTimeout){
+       		 byte[] buf = new byte[100];
+       		 buf[0] = '8';
+        	 buf[1] = FoodItem.opcodeDelimiter.getBytes()[0];
+        	 if(newTimeout == 0){
+           		 buf[2] = '0';
+        	 }else{
+            		buf[2] = newTimeout.getBytes();
+        	 }
+        
+       		 DatagramPacket p = new DatagramPacket(buf, buf.length, fridgeControllerInetAddress, fridgeControllerPort);
+       		 try{
+           		 sock.send(p);
+        	 }catch(IOException e){
+            		System.out.println("Error sending timeout packet");
+        	 }
+        
+    	}
 
 	public static void main(String[] args){
 		GUIClass mainFrame = new GUIClass("Fridge Controller Controller");
@@ -97,3 +250,4 @@ class GUIClass extends JFrame {
 
 
 }
+

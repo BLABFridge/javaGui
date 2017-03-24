@@ -102,6 +102,10 @@ class FoodItem{
 		return (expiresInDays()/lifetime);
 	}
 
+	public float getLifetime() {
+		return lifetime;
+	}
+
 	public void renewExpiryDate(){ //this is considered a secondary constructor, the only reason it isn't in the constructor is so that expiryDate can be renewed at the 'time of entry'
 		expiryDate = new ComparableDate(lifetime); //this should be called when the item is put in the fridge.
 		dateAdded = LocalDateTime.now();
