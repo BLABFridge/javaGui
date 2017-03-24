@@ -26,9 +26,14 @@ public class ButtonListener implements ActionListener{
             case "Set Timeout":
                 System.out.print("Set Timeout pressed");
                 gui.editText1 = gui.setTimeoutTextArea.getText().toString();
-                int timeoutInput = Integer.valueOf(gui.editText1);
+                int timeoutInput;
+                if(gui.editText1 = ""){
+                    timeoutInput = 0;
+                }
+                timeoutInput = Integer.valueOf(gui.editText1);
                 gui.setTimeoutTextArea.setText(gui.defaultTimeoutAreaText);
                 //method call to set the timeout.
+                gui.setTimeout(timeoutInput);
             default: System.out.print("default case");
            }
 
