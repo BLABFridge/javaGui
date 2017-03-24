@@ -39,7 +39,7 @@ class GUIClass extends JFrame {
 	private DatagramSocket sock;
 	private InetAddress fridgeControllerInetAddress;
 
-	public static final String fridgeControllerInetAddressAsString = "10.0.0.41";
+	public static final String fridgeControllerInetAddressAsString = "172.17.197.117";
 	public static final int fridgeControllerPort = 1111;
 	public static final char[] blankTagCodeCharArray = {'0','0','0','0','0','0','0','0','0','0'}; //we don't know the tagcode so a blank one is required to use the FoodItem factory method
 
@@ -219,21 +219,34 @@ class GUIClass extends JFrame {
 		RowFilter<TableModel, Object> lifeFilter = null;
 		RowFilter<TableModel, Object> remainingFilter = null;
 		java.util.List<RowFilter<TableModel, Object>> filters = new ArrayList<RowFilter<TableModel, Object>>();
+		RowFilter<TableModel, Object> compoundFilter = null;
+
 		try {
 			nameFilter = RowFilter.regexFilter(nameTextField.getText(), 0);
 			addedFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) addedPicker.getModel().getValue(), 1);
-			expiryFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) expiryPicker.getModel().getValue(), 1);
+			expiryFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) expiryPicker.getModel().getValue(), 2);
+//			lifeFilter = RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, (int) lifeTextField.getText(), 3);
+			remainingFilter = RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, Integer.valueOf(daysLeftField.getText()), 4);
+			filters.add(nameFilter);
+			filters.add(addedFilter);
+			filters.add(expiryFilter);
+			filters.add(remainingFilter);
+			
+			compoundFilter = RowFilter.andFilter(filters);
+			sorter.setRowFilter(compoundFilter);
+			
 		} catch(java.util.regex.PatternSyntaxException e) {
 			e.getMessage();
 		}
 	}
 
-	public ArrayList<FoodItem> getItemsExpiringBefore(int days){ //this should be called by the actionEvent created by a button press
+	public ArrayList<FoodItem> getItemsExpiringBefore(int days) { //this should be called by the actionEvent created by a button press
 		byte[] buf = new byte[100];
 		buf[0] = '9';
 		buf[1] = FoodItem.opcodeDelimiter.getBytes()[0];
 		byte[] daysAsBytes = Integer.toString(days).getBytes();
 		System.arraycopy(daysAsBytes, 0, buf, 2, daysAsBytes.length);
+		buf[daysAsBytes.length + 2] = FoodItem.opcodeDelimiter.getBytes()[0];
 		DatagramPacket p = new DatagramPacket(buf, buf.length, fridgeControllerInetAddress, fridgeControllerPort);
 		try{
 			sock.send(p);
@@ -264,7 +277,7 @@ class GUIClass extends JFrame {
         	 if(newTimeout == 0){
            		 buf[2] = '0';
         	 }else{
-            		buf[2] = newTimeout.getBytes();
+            		buf[2] = (byte) newTimeout;
         	 }
         
        		 DatagramPacket p = new DatagramPacket(buf, buf.length, fridgeControllerInetAddress, fridgeControllerPort);
@@ -280,6 +293,9 @@ class GUIClass extends JFrame {
 		GUIClass mainFrame = new GUIClass("Fridge Controller Controller");
 		mainFrame.setVisible(true);
 		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+		ArrayList<FoodItem> itemList = mainFrame.getItemsExpiringBefore(0);
+		mainFrame.itemsToTable(itemList);
 		
 	}
 

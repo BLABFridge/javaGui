@@ -27,7 +27,7 @@ public class ButtonListener implements ActionListener{
                 System.out.print("Set Timeout pressed");
                 gui.editText1 = gui.setTimeoutTextArea.getText().toString();
                 int timeoutInput;
-                if(gui.editText1 = ""){
+                if(gui.editText1 == ""){
                     timeoutInput = 0;
                 }
                 timeoutInput = Integer.valueOf(gui.editText1);
