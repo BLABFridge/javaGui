@@ -1,6 +1,7 @@
 /*
 On creation of a food item, renewExpiryDate() must be called, otherwise expiryDate will be undefined, the constructors do not define it
 */
+import java.lang.Math;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
@@ -26,13 +27,17 @@ class FoodItem{
 	}
 
 	private FoodItem(char[] tagCode, String name, float lifetime, ComparableDate expiryDate){
+		
 		this.tagCode = tagCode.clone();
-		expiryDate = null;
-		itemName = name;
+		this.expiryDate = expiryDate;
+		this.itemName = name;
 		this.lifetime = lifetime;
 		for (int i = 0; i < warningExpiryToLifetimeRatio.length; ++i) {
 			warningTimes.add(24 * lifetime * warningExpiryToLifetimeRatio[i]);
 		}
+		this.dateAdded = LocalDateTime.now();
+		this.dateAdded.minusDays((long) (lifetime-expiresInDays()));
+
 	}
 
 	public FoodItem(char[] tagCode, String name, float lifetime){
@@ -54,14 +59,14 @@ class FoodItem{
 	}
 
 	public static FoodItem getFoodItemFromByteArray(char[] tagCode, byte[] bytes){
-
 		String splittableString = new String(bytes);
 		// System.out.println("Splitting " + t);
 		String[] strings = splittableString.split(matchRegexOpcodeDelimiter);
 
-		if(strings.length > 5){
+		if(strings.length == 5){
 			return new FoodItem(tagCode, strings[1], Integer.parseInt(strings[2]), new ComparableDate(Integer.parseInt(strings[3])));
 		}
+		
 		return new FoodItem(tagCode, strings[1], Integer.parseInt(strings[2])); //using packet format, the first is the opcode (ignored), second is name, third is lifetime
 	}
 

@@ -35,7 +35,7 @@ class GUIClass extends JFrame {
 	private JScrollPane scrollP;
 	private JDatePickerImpl addedPicker, expiryPicker;
 	private JTextArea nameTextField, daysLeftField;
-
+	private	TableRowSorter<TableModel> sorter; 
 	private DatagramSocket sock;
 	private InetAddress fridgeControllerInetAddress;
 
@@ -46,11 +46,16 @@ class GUIClass extends JFrame {
 	public GUIClass(String s){
 		super(s);
 		this.setSize(400, 400);
-
+		this.setLayout(new GridBagLayout());
 		midPane = new JPanel();
 		midPane.setLayout(new GridBagLayout());
 		midPane.setSize(400, 300);
 		midPane.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = 7;
+		c.weighty = 1;
 		this.add(midPane);
 //		getListButton = new JButton("Get List");
 		setTimeout = new JButton("Set Timeout");
@@ -95,7 +100,13 @@ class GUIClass extends JFrame {
 		pane.add(getListButton, c);
 */
 		// This is the date picker library.
+		TextChangeListener jTextListener = new TextChangeListener(this);
+
+		LocalDateTime today = LocalDateTime.now();
 		UtilDateModel model = new UtilDateModel();
+		model.setDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+		model.setSelected(true);
+		model.addChangeListener(jTextListener);
 
 		Properties p = new Properties();
 		p.put("text.today", "Today");
@@ -105,10 +116,7 @@ class GUIClass extends JFrame {
 
 		addedPicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
 		expiryPicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-		
-		GridBagConstraints c = new GridBagConstraints();
 
-		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(3, 3, 3, 3);
 		c.gridx = 0;
 		c.gridy = 4;
@@ -117,6 +125,7 @@ class GUIClass extends JFrame {
 		c.gridx = 1;
 		c.gridy = 4;
 		nameTextField = new JTextArea();
+		nameTextField.getDocument().addDocumentListener(new DocumentListener());
 		midPane.add(nameTextField, c);
 
 		c.gridx = 0;
@@ -141,7 +150,8 @@ class GUIClass extends JFrame {
 
 		c.gridx = 1;
 		c.gridy = 7;
-		daysLeftField = new JTextArea();
+		daysLeftField = new JTextArea("100");
+		daysLeftField.getDocument().addDocumentListener(new DocumentListener());
 		midPane.add(daysLeftField, c);
 		
 	
@@ -181,8 +191,8 @@ class GUIClass extends JFrame {
 		topPane = new JPanel();
 		topPane.setLayout(new GridBagLayout());
 		topPane.setSize(400, 400);
-		
-		Object data[][] = null;
+		int listSize = itemList.size();
+		Object data[][] = new Object[listSize][5];
 		int i = 0;
 		String[] columnNames = {"Food Name", 
 			"Date Added", 
@@ -191,6 +201,7 @@ class GUIClass extends JFrame {
 			"Time Until Expiration"};
 		for(FoodItem item:itemList) {
 			data[i][0] = item.getName();
+			System.out.println(item.getDateAdded());
 			data[i][1] = Date.from(item.getDateAdded().atZone(ZoneId.systemDefault()).toInstant());
 			data[i][2] = Date.from(item.expiresOn().atZone(ZoneId.systemDefault()).toInstant());
 			data[i][3] = item.getLifetime();
@@ -198,7 +209,7 @@ class GUIClass extends JFrame {
 			i += 1;
 		}
 		JTable table = new JTable(data, columnNames);
-		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
+		sorter = new TableRowSorter<TableModel>(table.getModel());
 		table.setRowSorter(sorter);
 		scrollP = new JScrollPane(table, 
 			JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
@@ -211,8 +222,14 @@ class GUIClass extends JFrame {
 		c.gridx = 0;
 		c.gridy = 0;
 		topPane.add(scrollP, c);
-		this.add(topPane);
-		
+		c.gridx = 0;
+		c.gridy = 0;
+		c.weighty = 6;
+		this.add(topPane, c);
+
+	}
+
+	public void applyNewFilter() {
 		RowFilter<TableModel, Object> nameFilter = null;
 		RowFilter<TableModel, Object> addedFilter = null;
 		RowFilter<TableModel, Object> expiryFilter = null;
@@ -227,6 +244,7 @@ class GUIClass extends JFrame {
 			expiryFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) expiryPicker.getModel().getValue(), 2);
 //			lifeFilter = RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, (int) lifeTextField.getText(), 3);
 			remainingFilter = RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, Integer.valueOf(daysLeftField.getText()), 4);
+			
 			filters.add(nameFilter);
 			filters.add(addedFilter);
 			filters.add(expiryFilter);
@@ -302,4 +320,3 @@ class GUIClass extends JFrame {
 
 
 }
-
