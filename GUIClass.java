@@ -2,6 +2,8 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -100,13 +102,13 @@ class GUIClass extends JFrame {
 		pane.add(getListButton, c);
 */
 		// This is the date picker library.
-		TextChangeListener jTextListener = new TextChangeListener(this);
+		FilterListener filterListener = new FilterListener(this);
 
 		LocalDateTime today = LocalDateTime.now();
 		UtilDateModel model = new UtilDateModel();
 		model.setDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
 		model.setSelected(true);
-		model.addChangeListener(jTextListener);
+		model.addChangeListener(filterListener);
 
 		Properties p = new Properties();
 		p.put("text.today", "Today");
@@ -125,7 +127,7 @@ class GUIClass extends JFrame {
 		c.gridx = 1;
 		c.gridy = 4;
 		nameTextField = new JTextArea();
-		nameTextField.getDocument().addDocumentListener(new DocumentListener());
+		nameTextField.getDocument().addDocumentListener(new TextListener(this));
 		midPane.add(nameTextField, c);
 
 		c.gridx = 0;
@@ -151,7 +153,7 @@ class GUIClass extends JFrame {
 		c.gridx = 1;
 		c.gridy = 7;
 		daysLeftField = new JTextArea("100");
-		daysLeftField.getDocument().addDocumentListener(new DocumentListener());
+		daysLeftField.getDocument().addDocumentListener(new TextListener(this));
 		midPane.add(daysLeftField, c);
 		
 	
