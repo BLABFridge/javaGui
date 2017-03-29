@@ -59,65 +59,34 @@ class GUIClass extends JFrame {
 		c.gridy = 7;
 		c.weighty = 1;
 		this.add(midPane);
-//		getListButton = new JButton("Get List");
-		setTimeout = new JButton("Set Timeout");
-		getExpiring = new JButton("Get Expiring");
 		
-		expiringTextArea = new JTextArea(defaultExpiringAreaText);
-		setTimeoutTextArea = new JTextArea(defaultTimeoutAreaText);
-		// Moved all table creation and listing into new method called itemsToTable();
-		// Just request all items from the beginning and put into table and let
-		// the JTable library do the filtering.
-/*
-		String[] columnNames = {"Food Name", 
-			"Date Added", 
-			"Expiry Date", 
-			"Shelf Life", 
-			"Time Until Expiration"};
-		LocalDate today = LocalDate.now();
-		LocalDate apple = today.plus(4, ChronoUnit.DAYS);
-		LocalDate orange = today.plus(6, ChronoUnit.DAYS);
-		Object[][] data = {{"Orange", today, orange, 6, ChronoUnit.DAYS.between(today, orange)}, 
-				{"Apple", today, apple, 3, ChronoUnit.DAYS.between(today, apple)}};
-		
-		JTable table = new JTable(data, columnNames);
-		table.setAutoCreateRowSorter(true);
-		scrollP = new JScrollPane(table, 
-			JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-			JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		//THIS NEEDS MORE WORK- IS NOT COMPLETE
-		GridBagConstraints c = new GridBagConstraints();
-		
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 4;
-		c.weighty = 4;
-		c.gridx = 0;
-		c.gridy = 0;
-		pane.add(scrollP, c);
-		
-		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = 1;
-		pane.add(getListButton, c);
-*/
 		// This is the date picker library.
 		FilterListener filterListener = new FilterListener(this);
 
-		LocalDateTime today = LocalDateTime.now();
-		UtilDateModel model = new UtilDateModel();
-		model.setDate(today.getYear(), today.getMonthValue(), today.getDayOfMonth());
-		model.setSelected(true);
-		model.addChangeListener(filterListener);
+		UtilDateModel model1 = new UtilDateModel();
+		model1.setSelected(true);
+		model1.addChangeListener(filterListener);
 
-		Properties p = new Properties();
-		p.put("text.today", "Today");
-		p.put("text.month", "Month");
-		p.put("text.year", "Year");
-		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+		Properties p1 = new Properties();
+		p1.put("text.today", "Today");
+		p1.put("text.month", "Month");
+		p1.put("text.year", "Year");
+		JDatePanelImpl datePanel1 = new JDatePanelImpl(model1, p1);
 
-		addedPicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-		expiryPicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		addedPicker = new JDatePickerImpl(datePanel1, new DateLabelFormatter());
+
+		UtilDateModel model2 = new UtilDateModel();
+		model2.setSelected(true);
+		model2.addChangeListener(filterListener);
+
+		Properties p2 = new Properties();
+		p2.put("text.today", "Today");
+		p2.put("text.month", "Month");
+		p2.put("text.year", "Year");
+		JDatePanelImpl datePanel2 = new JDatePanelImpl(model2, p2);
+
+
+		expiryPicker = new JDatePickerImpl(datePanel2, new DateLabelFormatter());
 
 		c.insets = new Insets(3, 3, 3, 3);
 		c.gridx = 0;
@@ -152,28 +121,11 @@ class GUIClass extends JFrame {
 
 		c.gridx = 1;
 		c.gridy = 7;
+// Need to change this input from a jtextfield to an uneditable combobox.
 		daysLeftField = new JTextArea("100");
 		daysLeftField.getDocument().addDocumentListener(new TextListener(this));
 		midPane.add(daysLeftField, c);
-		
 	
-		//NEED TO ADD THE BUTTONS AND THE TEXT AREAS IN THE APPROPRIATE PLACE
-/*		c.gridx = 0;
-		c.gridy = 4;
-		pane.add(getExpiring, c); 
-		c.gridx = 1;
-		pane.add(expiringTextArea, c);
-		c.gridy = 5;
-		c.gridx = 0;
-		pane.add(setTimeout,c);
-		c.gridx = 1;
-		pane.add(setTimeoutTextArea,c);
-*/		
-		//add()
-//		getListButton.addActionListener(new ButtonListener(this));
-		getExpiring.addActionListener(new ButtonListener(this));
-		setTimeout.addActionListener(new ButtonListener(this));
-
 		try{
 			sock = new DatagramSocket();
 		} catch(IOException e){
@@ -313,7 +265,11 @@ class GUIClass extends JFrame {
 		GUIClass mainFrame = new GUIClass("Fridge Controller Controller");
 		mainFrame.setVisible(true);
 		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
+		/*ArrayList<FoodItem> itemList = new ArrayList<FoodItem>();
+		FoodItem item1 = new FoodItem("1234567890".toCharArray(), "Yogurt", 12, new ComparableDate(6));
+		itemList.add(item1);
+		FoodItem item2 = new FoodItem("0987654321".toCharArray(), "Pork Chop", 7, new ComparableDate(3));
+		itemList.add(item2);*/
 		ArrayList<FoodItem> itemList = mainFrame.getItemsExpiringBefore(0);
 		mainFrame.itemsToTable(itemList);
 		

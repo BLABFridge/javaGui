@@ -14,11 +14,11 @@ public class TextListener implements DocumentListener {
 	}
 
 	public void removeUpdate(DocumentEvent e) {
-		return;
+		gui.applyNewFilter();
 	}
 
 	public void insertUpdate(DocumentEvent e) {
-		return;
+		gui.applyNewFilter();
 	}
 
 }

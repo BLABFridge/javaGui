@@ -26,7 +26,7 @@ class FoodItem{
 		this(tagCode, name, 1); //default lifetime of 1 day
 	}
 
-	private FoodItem(char[] tagCode, String name, float lifetime, ComparableDate expiryDate){
+	public FoodItem(char[] tagCode, String name, float lifetime, ComparableDate expiryDate){
 		
 		this.tagCode = tagCode.clone();
 		this.expiryDate = expiryDate;
