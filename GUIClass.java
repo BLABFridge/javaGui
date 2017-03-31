@@ -28,14 +28,12 @@ class GUIClass extends JFrame {
 	public String editText1 = "";
 	public String defaultExpiringAreaText = "Enter date";
 	public String defaultTimeoutAreaText = "Enter Timeout";
-//	public JButton getListButton;
-	public JButton setTimeout;
-	public JButton getExpiring;
 	public JPanel topPane;
 	private JPanel midPane;
 	private JPanel botPane;
 	private JScrollPane scrollP;
 	private JDatePickerImpl addedPicker, expiryPicker;
+	private JComboBox<Integer> numPicker;
 	private JTextArea nameTextField, daysLeftField;
 	private	TableRowSorter<TableModel> sorter; 
 	private DatagramSocket sock;
@@ -115,16 +113,23 @@ class GUIClass extends JFrame {
 		c.gridy = 6;
 		midPane.add(expiryPicker, c);
 		
+
 		c.gridx = 0;
 		c.gridy = 7;
-		midPane.add(new JTextField("Days Until Expiration:"), c);
+		midPane.add(new JTextField("Days until Expiration:"), c);
+
+		Integer[] numList = new Integer[31];
+		for(int i = 1; i < 31; i += 1) {
+			numList[i] = 31-i;
+		}
+		numPicker = new JComboBox<Integer>(numList);
+		numPicker.removeItemAt(0);
+	//	numPicker.setSelectedIndex(0);
+		numPicker.addItemListener(new ComboListener(this));
 
 		c.gridx = 1;
 		c.gridy = 7;
-// Need to change this input from a jtextfield to an uneditable combobox.
-		daysLeftField = new JTextArea("100");
-		daysLeftField.getDocument().addDocumentListener(new TextListener(this));
-		midPane.add(daysLeftField, c);
+		midPane.add(numPicker, c);
 	
 		try{
 			sock = new DatagramSocket();
@@ -197,7 +202,7 @@ class GUIClass extends JFrame {
 			addedFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) addedPicker.getModel().getValue(), 1);
 			expiryFilter = RowFilter.dateFilter(RowFilter.ComparisonType.BEFORE, (Date) expiryPicker.getModel().getValue(), 2);
 //			lifeFilter = RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, (int) lifeTextField.getText(), 3);
-			remainingFilter = RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, Integer.valueOf(daysLeftField.getText()), 4);
+			remainingFilter = RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, (int) numPicker.getSelectedItem(), 4);
 			
 			filters.add(nameFilter);
 			filters.add(addedFilter);
